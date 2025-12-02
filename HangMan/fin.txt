@@ -1,5 +1,4 @@
-﻿using System;
-
+using System;
 
 namespace HangMan
 {
@@ -10,17 +9,14 @@ namespace HangMan
             while (true)
             {
                 string[] WordBase = ReadSecretWord();
-                string WordToGuess = WordBase[0];     // word to guess
+                string WordToGuess = WordBase[0];    // word to guess
                 string WordPlaceholder = WordBase[1]; // placeholder for the word
-
+                
                 int wrongGuessesCount = 0;
                 string wrongGuessesChars = "";
                 int currentFrame = 0;
 
                 DisplayWord(WordPlaceholder);
-
-                // Print initial hangman frame 0
-                HangTheMan(currentFrame, wrongGuessesCount, wrongGuessesChars);
 
                 while (true)
                 {
@@ -34,7 +30,7 @@ namespace HangMan
                         Console.WriteLine("Game over! You've lost.");
                         break;
                     }
-
+                    
                     if (!WordBase[1].Contains("_"))
                     {
                         Console.WriteLine("Congratulations! You've guessed the word!");
@@ -54,8 +50,6 @@ namespace HangMan
             Console.WriteLine($"Word to guess: {word}");
         }
 
-        static void print(string x) { Console.WriteLine(x); }
-
         static string input(string message)
         {
             Console.WriteLine(message);
@@ -65,41 +59,17 @@ namespace HangMan
         static string[] ReadSecretWord()
         {
             string allowedChars = "abcdefghijklmnopqrstuvwxyz";
-
             while (true)
             {
-                string secretWord = input("Enter the secret word to guess (at least 4 letters, no numbers):").ToLower(); //ensure lowercase
-                bool wordOk = true; //initialisation needed because else line 77/if loop is throwing errs.
-                foreach (char c in allowedChars)
+                string secretWord = input("Enter the secret word to guess (at least 4 letters, no numbers):");
+                if (secretWord.Length < 4 || secretWord.Any(c => !allowedChars.Contains(c)))
                 {
-                    if (!allowedChars.Contains(c))
-                    {
-                        wordOk = false;
-                        break;
-                    }
-                }
-
-                if (secretWord.Contains(" ") == true)
-                {
-                    continue;
-                }
-                if (secretWord.Length < 4 || wordOk == false)
-                {
-                    print("Invalid input! The word must be at least 4 characters and contains only letters.");
+                    Console.WriteLine("Invalid input! The word must be at least 4 characters long and contain only letters.");
                     continue;
                 }
 
-                // Create placeholder: "_ _ _ _"
-                string wordPlaceholder = "";
-                foreach (char c in secretWord)
-                {
-                    wordPlaceholder += "_ ";
-                }
-
-                // Remove " " at end
-                wordPlaceholder = wordPlaceholder.TrimEnd();
-
-                return new string[] { secretWord, wordPlaceholder }; //return word + placeholder
+                string wordPlaceholder = new string('_', secretWord.Length);
+                return new string[] { secretWord, wordPlaceholder };
             }
         }
 
@@ -110,48 +80,47 @@ namespace HangMan
             {
                 Console.Write("Enter a letter: ");
                 letterIn = Console.ReadKey().KeyChar;
-                Console.WriteLine(); //create Space
+                Console.WriteLine();
 
-                if (char.IsLetter(letterIn)) //check if input char is really a letter.
+                if (char.IsLetter(letterIn))
                 {
-                    return char.ToLower(letterIn);
+                    break;
                 }
                 else
                 {
-                    print("Invalid input! Please enter a letter.");
+                    Console.WriteLine("Invalid input! Please enter a letter.");
                 }
             }
+
+            return letterIn;
         }
 
         static void EvaluateTheSituation(ref string[] WordBase, char guessedChar, ref int wrongGuessesCount, ref string wrongGuessesChars, ref bool guessSuccess)
         {
             string wordToGuess = WordBase[0];
             string currentPlaceholder = WordBase[1];
-
-            // Remove spaces from placeholder for simpler indexing
-            char[] placeholderChars = currentPlaceholder.Replace(" ", "").ToCharArray();
-
-            if (!wordToGuess.Contains(guessedChar)) //guess wrong
+            
+            if (!wordToGuess.Contains(guessedChar.ToString()))
             {
                 wrongGuessesCount++;
                 wrongGuessesChars += guessedChar + ", ";
                 guessSuccess = false;
             }
-            else // guess valid
+            else
             {
                 guessSuccess = true;
+                char[] updatedPlaceholder = currentPlaceholder.ToCharArray();
 
                 for (int i = 0; i < wordToGuess.Length; i++)
                 {
                     if (wordToGuess[i] == guessedChar)
                     {
-                        placeholderChars[i] = guessedChar; //update place holder
+                        updatedPlaceholder[i] = guessedChar;
                     }
                 }
-            }
 
-            // Convert back to spaced placeholder ("a _ _ n")
-            WordBase[1] = string.Join(" ", placeholderChars);
+                WordBase[1] = new string(updatedPlaceholder);
+            }
 
             DisplayWord(WordBase[1]);
         }
@@ -217,8 +186,10 @@ namespace HangMan
                 "
             };
 
+            Console.Clear();
             Console.WriteLine(Frames[wrongGuessesCount]);
-            print($"Wrong guesses: {wrongGuessesChars}");
+
+            Console.WriteLine($"Wrong guesses: {wrongGuessesChars}");
         }
 
         static void QuitOrRestart()
